@@ -175,7 +175,7 @@ async function get(hub, { language = 'en' } = {}) {
       color: totals.errors ? WIDGET_COLORS.DANGER : WIDGET_COLORS.NEUTRAL,
     },
   ];
-  const task = hub.currentTask(language);
+  const task = hub.currentTask(language, 40);
   if (task) {
     components.push({
       type: 'status',
@@ -183,7 +183,7 @@ async function get(hub, { language = 'en' } = {}) {
         {
           label: t(TEXT.task, language),
           icon: 'activity',
-          value: fit(task, 40),
+          value: task,
           color: WIDGET_COLORS.PRIMARY,
         },
       ],

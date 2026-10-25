@@ -168,9 +168,9 @@ n'est pas annoncé.
   ajoutée d'un coup), les vidéos sont comptées, pas toutes annoncées. Une vidéo
   importée ou réindexée avec une date de téléchargement ancienne n'est pas
   annoncée.
-- Les 25 téléchargements en erreur les plus récents sont lus ; les autres sont
+- Les 25 à 50 téléchargements en erreur les plus récents sont lus ; les autres sont
   comptés.
-- **Ajouter une vidéo** attend jusqu'à 20 secondes que Tube Archivist accepte le
+- **Ajouter une vidéo** attend jusqu'à 15 secondes que Tube Archivist accepte le
   lien ; une playlist ou une chaîne peut prendre plus longtemps : l'action
   réussit alors, et ses vidéos apparaissent dans la file au rafraîchissement
   suivant.

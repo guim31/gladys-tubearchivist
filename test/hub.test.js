@@ -130,6 +130,26 @@ test('a failed download fires download_failed once; a retry that fails again fir
   assert.equal(events(w, 'download_failed').length, 2);
 });
 
+test('beyond 25 failed downloads, a new failure is still seen (the queue is oldest first)', async (t) => {
+  const w = await world(t);
+  for (let i = 0; i < 60; i += 1) {
+    w.archivist.enqueue(`Old failure ${i}`, 'Blender', { error: 'ERROR: old' });
+  }
+  await w.hub.pollAll();
+  assert.equal(events(w, 'download_failed').length, 10, 'at most 10 per reading, the newest');
+  assert.equal(events(w, 'download_failed').at(-1).data.title, 'Old failure 59');
+  const before = events(w, 'download_failed').length;
+  w.archivist.fail(w.archivist.enqueue('Newest failure', 'Kurzgesagt'));
+  await w.hub.pollAll();
+  await w.hub.pollAll();
+  const after = events(w, 'download_failed').slice(before);
+  assert.deepEqual(
+    after.map((event) => event.data.title),
+    ['Newest failure'],
+  );
+  assert.equal(state(w, 'errors'), 62);
+});
+
 test('the queue emptied fires queue_empty once (failed downloads stay)', async (t) => {
   const w = await world(t);
   w.archivist.queue = w.archivist.queue.filter((item) => item.message);
@@ -201,6 +221,9 @@ test('the task in progress, translated, with its progress', async (t) => {
   ];
   await w.hub.pollAll();
   assert.equal(state(w, 'task'), 'Recherche de nouvelles vidéos : Blender (84 %)');
+  // In the widget (40 characters), the detail is cut, not the progress.
+  assert.equal(w.hub.currentTask('fr', 40), 'Recherche de nouvelles vidéos (84 %)');
+  assert.equal(w.hub.currentTask('en', 40), 'Searching for new videos: Blender (84 %)');
   w.archivist.notifications = [
     { id: 'x', title: 'Index Backup', group: 'setting:backup', level: 'info', messages: [] },
   ];

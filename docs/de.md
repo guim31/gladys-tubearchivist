@@ -163,9 +163,9 @@ nicht gemeldet.
   Über 10 neue Videos hinaus (eine große Playlist auf einmal) werden die Videos
   gezählt, nicht alle gemeldet. Ein importiertes oder neu indiziertes Video mit
   altem Download-Datum wird nicht gemeldet.
-- Die 25 neuesten fehlgeschlagenen Downloads werden gelesen; die anderen werden
+- Die 25 bis 50 neuesten fehlgeschlagenen Downloads werden gelesen; die anderen werden
   gezählt.
-- **Video hinzufügen** wartet bis zu 20 Sekunden, bis Tube Archivist den Link
+- **Video hinzufügen** wartet bis zu 15 Sekunden, bis Tube Archivist den Link
   annimmt; eine Playlist oder ein Kanal kann länger dauern: Die Aktion gelingt
   dann, und die Videos erscheinen bei der nächsten Aktualisierung in der
   Warteschlange.

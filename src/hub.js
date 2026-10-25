@@ -60,7 +60,7 @@ export const HUB_TIMINGS = {
   // Republish an unchanged value this often (Gladys flags a value older than 48 h).
   heartbeatMs: 12 * 60 * 60_000,
   // How long "Add a video" waits for Tube Archivist to accept the link.
-  addWaitMs: 20_000,
+  addWaitMs: 15_000,
   addStepMs: 1_000,
 };
 
@@ -352,6 +352,12 @@ export class TubeArchivistHub {
       const fresh = reading.latest.filter(
         (video) => !known.has(video.id) && (video.downloaded ?? 0) >= saved.lastDownloaded,
       );
+      if (fresh.length >= 25 && fresh.length === reading.latest.length) {
+        // A whole page is new: older arrivals beyond it are counted, not announced.
+        logger.debug(
+          `Tube Archivist: ${fresh.length}+ new videos at once, the older ones not announced`,
+        );
+      }
       events.archived = fresh.reverse();
       for (const video of events.archived) {
         saved.recent = [
@@ -360,7 +366,8 @@ export class TubeArchivistHub {
         ].slice(0, RECENT_SIZE);
       }
       const failed = new Set(saved.failed);
-      events.failed = reading.failed.filter((item) => !failed.has(item.id)).reverse();
+      // Oldest first in the answer, the order they failed in.
+      events.failed = reading.failed.filter((item) => !failed.has(item.id));
       events.emptied = saved.toDownload > 0 && toDownload === 0;
     }
     // A video deleted from the library leaves the widget.
@@ -479,7 +486,7 @@ export class TubeArchivistHub {
   }
 
   /** The task Tube Archivist runs now, as one line in the language; '' when none. */
-  currentTask(language = this.config?.language) {
+  currentTask(language = this.config?.language, max = 250) {
     const text = TASK_TEXT[language] ?? TASK_TEXT.en;
     const tasks = (this.server.reading?.tasks ?? []).filter(
       (task) =>
@@ -501,8 +508,13 @@ export class TubeArchivistHub {
       task.progress !== null && task.progress > 0 && task.progress < 1
         ? ` (${Math.round(task.progress * 100)} %)`
         : '';
+    // The detail is cut, never the label nor the progress.
+    const room = max - label.length - text.colon.length - percent.length;
+    if (detail.length > room) {
+      detail = room > 1 ? `${detail.slice(0, room - 1).trimEnd()}…` : '';
+    }
     const line = `${label}${detail ? `${text.colon}${detail}` : ''}${percent}`;
-    return line.length > 250 ? `${line.slice(0, 249)}…` : line;
+    return line.length > max ? `${line.slice(0, max - 1)}…` : line;
   }
 
   /** The recent videos, newest first. */
@@ -697,7 +709,8 @@ export class TubeArchivistHub {
         break;
       }
     }
-    await this.refresh().catch(() => {});
+    // In the background: the widget action has 30 s, the wait above up to 15.
+    this.refresh().catch(() => {});
     if (state.status === 'FAILURE') {
       logger.info('Tube Archivist refused the link');
       throw new CommandError(

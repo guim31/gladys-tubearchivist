@@ -22,16 +22,17 @@ const json = (status, body) => ({
   body: JSON.stringify(body),
 });
 
-const paginate = (data, params) => ({
-  data: data.slice(0, 25),
+// Pages of 25, from 1 (no page: the first), as Tube Archivist serves them.
+const paginate = (data, params, page = 1) => ({
+  data: data.slice((page - 1) * 25, page * 25),
   paginate: {
     page_size: 25,
-    page_from: 0,
+    page_from: (page - 1) * 25,
     prev_pages: null,
-    current_page: 0,
+    current_page: page > 1 ? page : 0,
     max_hits: false,
     params,
-    last_page: 0,
+    last_page: Math.ceil(data.length / 25),
     next_pages: [],
     total_hits: data.length,
   },
@@ -200,6 +201,7 @@ export class FakeTubeArchivist {
             ...(message ? { message } : {}),
           })),
           target.search.slice(1),
+          Number(query.get('page') ?? 1),
         ),
       );
     }

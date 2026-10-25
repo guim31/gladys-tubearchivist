@@ -35,7 +35,7 @@ export function registerHandlers(gladys, options = {}) {
   const ready = new Promise((resolve) => {
     resolveReady = resolve;
   });
-  let started = false;
+  let started = null;
   const whenReady =
     (fn) =>
     async (...args) => {
@@ -47,12 +47,14 @@ export function registerHandlers(gladys, options = {}) {
     try {
       const config = normalizeConfig(await gladys.getConfig());
       if (started) {
-        // A reconnection (Gladys restarted): send again what Gladys may have lost.
+        // A reconnection (Gladys restarted): send again what Gladys may have
+        // lost, once the first start has loaded what was saved.
+        await started.catch(() => {});
         await hub.resync(config);
         return;
       }
-      started = true;
-      await hub.start(config);
+      started = hub.start(config);
+      await started;
     } catch (err) {
       logger.error('Initialization failed', err);
       await gladys.setConnectionStatus(false, INIT_FAILED).catch(() => {});

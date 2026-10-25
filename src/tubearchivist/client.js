@@ -213,7 +213,7 @@ export class TubeArchivistClient {
         this.call('/api/stats/download/'),
         this.call('/api/stats/downloadhist/'),
         this.call('/api/video/?sort=downloaded&order=desc'),
-        this.call('/api/download/?filter=pending&error=true'),
+        this.failedDownloads(),
         this.call('/api/notification/'),
       ]);
     const list = (answer) => (Array.isArray(answer?.data) ? answer.data : []);
@@ -242,6 +242,31 @@ export class TubeArchivistClient {
         ? notifications.map(parseNotification).filter((task) => task.id)
         : [],
     };
+  }
+
+  /**
+   * The newest failed downloads. Tube Archivist lists the queue oldest first,
+   * 25 per page (pages from 1): beyond one page, the last two pages are read,
+   * so a new failure is never hidden behind the old ones. Oldest first.
+   */
+  async failedDownloads() {
+    const path = '/api/download/?filter=pending&error=true';
+    const first = await this.call(path);
+    const data = Array.isArray(first?.data) ? first.data : [];
+    const total = int(first?.paginate?.total_hits);
+    const size = int(first?.paginate?.page_size) || 25;
+    if (total <= data.length || data.length === 0) {
+      return first;
+    }
+    const last = Math.ceil(total / size);
+    if (last < 2) {
+      return first;
+    }
+    const pages = await Promise.all(
+      [last - 1, last].filter((page) => page >= 2).map((page) => this.call(`${path}&page=${page}`)),
+    );
+    const newest = pages.flatMap((answer) => (Array.isArray(answer?.data) ? answer.data : []));
+    return { data: last === 2 ? [...data, ...newest] : newest, paginate: first.paginate };
   }
 
   /** Start a task by name (TASKS); resolves with its task id. */

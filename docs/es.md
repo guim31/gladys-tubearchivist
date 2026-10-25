@@ -157,8 +157,8 @@ anuncia.
   allá de 10 vídeos nuevos (una lista grande añadida de golpe), los vídeos se
   cuentan, no se anuncian todos. Un vídeo importado o reindexado con una fecha
   de descarga antigua no se anuncia.
-- Se leen las 25 descargas fallidas más recientes; las demás se cuentan.
-- **Añadir un vídeo** espera hasta 20 segundos a que Tube Archivist acepte el
+- Se leen las 25 a 50 descargas fallidas más recientes; las demás se cuentan.
+- **Añadir un vídeo** espera hasta 15 segundos a que Tube Archivist acepte el
   enlace; una lista o un canal puede tardar más: la acción tiene éxito entonces,
   y sus vídeos aparecen en la cola en la siguiente actualización.
 - La integración se escribió para la API de Tube Archivist v0.5 (probada con la

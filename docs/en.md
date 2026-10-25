@@ -152,8 +152,8 @@ Tube Archivist already had when the integration started is not announced.
   videos (a large playlist added at once), the videos are counted, not all
   announced. A video imported or rescanned with an old download date is not
   announced.
-- The 25 most recent failed downloads are read; the others are counted.
-- **Add a video** waits up to 20 seconds for Tube Archivist to accept the link;
+- The 25 to 50 most recent failed downloads are read; the others are counted.
+- **Add a video** waits up to 15 seconds for Tube Archivist to accept the link;
   a playlist or a channel can take longer: the action then succeeds, and its
   videos show in the queue at the next refresh.
 - The integration was written for the API of Tube Archivist v0.5 (tested on
