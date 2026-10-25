@@ -1,0 +1,166 @@
+# Tube Archivist
+
+Lleve su servidor [Tube Archivist](https://www.tubearchivist.com) (el archivo
+autoalojado de canales de YouTube, basado en yt-dlp) a Gladys, a través de su
+red local: los vídeos archivados, los canales suscritos, el tamaño de la
+biblioteca, la cola de descargas y sus errores, la tarea en curso, los últimos
+vídeos en un panel, escenas que reaccionan cuando llega un vídeo nuevo, cuando
+falla una descarga o cuando la cola queda vacía, y acciones de escena para
+añadir un vídeo o buscar novedades de sus suscripciones.
+
+La integración se probó con un Tube Archivist v0.5.12 real (las imágenes Docker
+oficiales, con descargas reales desde YouTube), todavía no en una instalación
+real de Gladys: sus comentarios son bienvenidos en el
+[foro de Gladys](https://community.gladysassistant.com) o en las
+[issues](https://github.com/guim31/gladys-tubearchivist/issues).
+
+## Lo que necesita
+
+- Gladys Assistant 5.2.0 o posterior.
+- Un servidor **Tube Archivist** v0.5 o posterior, accesible desde Gladys
+  (misma red), en el puerto de su interfaz web (`8000` por defecto).
+- El **token de API** de un administrador de Tube Archivist: inicie sesión como
+  administrador, abra **Settings → Application** y copie el token que aparece
+  bajo **API token**. En Tube Archivist, la cola y las tareas están reservadas
+  a los administradores.
+
+## Instalación
+
+1. Instale la integración desde el catálogo de Gladys.
+2. En **Configuración**, introduzca la **Dirección** de Tube Archivist (por
+   ejemplo `192.168.1.2:8000`; sin puerto, se usa `8000`) y el **Token de
+   API**.
+3. Guarde y haga clic en **Probar la conexión**: el mensaje bajo el botón
+   indica la versión de Tube Archivist, los vídeos y el tamaño de la
+   biblioteca, los canales suscritos, la cola y los errores.
+4. Abra la pestaña **Descubrir**: un dispositivo para el servidor. Haga clic en
+   **Añadir**, elija una habitación y guarde.
+
+Opciones:
+
+- **Intervalo de actualización**: de 1 a 10 minutos (2 minutos por defecto).
+  Cada actualización son ocho pequeñas peticiones a la API de Tube Archivist.
+- **Idioma de los nombres de funciones**: los nombres que reciben las funciones
+  al añadir el dispositivo (francés por defecto), el texto de la tarea en curso
+  y las frases de las acciones de escena.
+
+La integración lee Tube Archivist. Solo cambia algo cuando usted lo pide:
+**Añadir un vídeo** y **Buscar** (botones del widget o acciones de escena).
+
+## El dispositivo
+
+Un dispositivo, **Tube Archivist** seguido de la dirección del servidor:
+
+| Función                 | Lo que da                                                        |
+| ----------------------- | ---------------------------------------------------------------- |
+| En línea                | 1 cuando Tube Archivist responde, 0 si no                        |
+| Vídeos archivados       | vídeos de la biblioteca                                          |
+| Canales suscritos       | canales a los que está suscrito en Tube Archivist                |
+| Tamaño de la biblioteca | tamaño de los vídeos en el disco, en GB                          |
+| Vídeos en la cola       | vídeos que esperan su descarga (sin contar los fallidos)         |
+| Descargas fallidas      | vídeos de la cola cuya descarga ha fallado                       |
+| Descargados hoy         | vídeos descargados desde medianoche, contados por Tube Archivist |
+| Tarea en curso          | lo que hace Tube Archivist (descarga, búsqueda…), o «Ninguna»    |
+| Último vídeo archivado  | su título y su canal, como texto                                 |
+
+Las cifras cambian en cada actualización. **Tarea en curso** indica el vídeo
+que se está descargando o el canal que se está buscando, con su progreso.
+
+## Panel
+
+El widget **Tube Archivist** muestra tres mosaicos (hoy, en la cola, fallidos),
+la tarea en curso, la lista de los últimos vídeos archivados (título, canal y
+fecha) y dos botones:
+
+- **Añadir un vídeo**: un formulario con el enlace de YouTube (un vídeo, una
+  lista o un canal) y cuándo descargarlo: **Ahora mismo** (al principio de la
+  cola, la descarga empieza) o **Por turno** (al final de la cola).
+- **Buscar**: busca ahora nuevos vídeos de sus canales suscritos.
+
+Añádalo desde el editor del panel; no necesita ningún ajuste y funciona incluso
+antes de añadir el dispositivo.
+
+## Escenas
+
+### Disparadores
+
+- **Vídeo archivado por Tube Archivist**: Tube Archivist acaba de descargar un
+  nuevo vídeo en la biblioteca. Filtro: **Canal** (el nombre del canal de
+  YouTube, exactamente como lo muestra Tube Archivist; vacío: cualquiera).
+  Información para las acciones: el canal, el título, la fecha de publicación
+  en YouTube, la duración, la página del vídeo en Tube Archivist y el número de
+  vídeos descargados hoy.
+- **Descarga de Tube Archivist fallida**: la descarga de un vídeo de la cola ha
+  fallado (vídeo no disponible, solo para miembros, bloqueado, error de
+  yt-dlp). Mismo filtro. Información: el canal, el título, el mensaje de error
+  y el enlace del vídeo en YouTube.
+- **Cola de Tube Archivist vacía**: Tube Archivist ya no tiene ningún vídeo por
+  descargar (los fallidos siguen en su cola y no cuentan). Información: los
+  vídeos descargados hoy y las descargas fallidas.
+
+Cada evento se anuncia una sola vez, incluso tras un reinicio de la
+integración. Lo que Tube Archivist ya tenía al arrancar la integración no se
+anuncia.
+
+### Acciones
+
+- **Leer los últimos vídeos de Tube Archivist**: lee Tube Archivist ahora y da
+  una frase para un mensaje o un aviso de voz, por ejemplo «Tube Archivist: 2
+  vídeos descargados hoy; últimos: «…» (…), «…» (…). 4 en la cola, 1
+  fallido.», con las cifras por separado (descargados hoy, en la cola,
+  fallidos, vídeos archivados, título y canal del último vídeo). Opción: el
+  número de vídeos citados en la frase (3 por defecto).
+- **Buscar novedades de las suscripciones de Tube Archivist**: busca ahora
+  nuevos vídeos de sus canales suscritos, como **Rescan your Subscriptions** en
+  Tube Archivist. Los vídeos nuevos entran en la cola; los canales con inicio
+  automático se descargan después.
+- **Añadir un vídeo a Tube Archivist**: añade un enlace de YouTube (vídeo,
+  lista, canal) a la cola, descargado **Ahora mismo** (por defecto) o **Por
+  turno**. Un enlace que Tube Archivist rechaza hace fallar la acción, con su
+  motivo.
+
+### Ideas de escenas
+
+- Cuando se archive un vídeo de su canal favorito, envíese un mensaje: «Nuevo
+  en el archivo: {title} ({channel}, {duration})».
+- Cada tarde a las 19 h, busque novedades de las suscripciones; cuando la cola
+  quede vacía, lea los últimos vídeos de Tube Archivist y anuncie la frase en
+  el altavoz del salón.
+- Cuando falle una descarga, envíese el mensaje de error, para actualizar las
+  cookies de yt-dlp o comprobar el vídeo.
+
+## Solución de problemas
+
+- **«Tube Archivist no responde»**: compruebe la dirección y el puerto
+  (`8000`), y que Gladys puede acceder al servidor (misma red, cortafuegos).
+- **«Token de API rechazado»**: copie de nuevo el token desde **Settings →
+  Application** en Tube Archivist (un token revocado cambia).
+- **«Este token no puede leer la cola de descargas»**: el token es de un
+  usuario que no es administrador; use el token de un administrador.
+- **«No hay ningún Tube Archivist v0.5 o posterior en esta dirección»**: otro
+  servicio responde en este puerto, o Tube Archivist es anterior a la v0.5 (las
+  rutas de su API eran distintas): actualícelo.
+- **«La dirección redirige»**: un proxy inverso envía a una página de acceso o a
+  HTTPS; introduzca la dirección directa de Tube Archivist en su red.
+- **Descargados hoy** se queda en 0 aunque lleguen vídeos: Tube Archivist cuenta
+  los días en su propia zona horaria (`TZ` de su contenedor); dele la zona
+  horaria de Gladys.
+- Más detalles: ponga el `LOG_LEVEL` de la integración en `debug` y abra sus
+  registros.
+
+## Límites
+
+- Las cifras, los eventos y la tarea en curso son tan recientes como el
+  intervalo de actualización: una tarea corta entre dos actualizaciones no se
+  ve.
+- Solo se comparan las 25 descargas más recientes en cada actualización: más
+  allá de 10 vídeos nuevos (una lista grande añadida de golpe), los vídeos se
+  cuentan, no se anuncian todos. Un vídeo importado o reindexado con una fecha
+  de descarga antigua no se anuncia.
+- Se leen las 25 a 50 descargas fallidas más recientes; las demás se cuentan.
+- **Añadir un vídeo** espera hasta 15 segundos a que Tube Archivist acepte el
+  enlace; una lista o un canal puede tardar más: la acción tiene éxito entonces,
+  y sus vídeos aparecen en la cola en la siguiente actualización.
+- La integración se escribió para la API de Tube Archivist v0.5 (probada con la
+  v0.5.12): una versión futura que la cambie puede requerir una actualización.
+- Sin afiliación con Tube Archivist, YouTube ni Google.

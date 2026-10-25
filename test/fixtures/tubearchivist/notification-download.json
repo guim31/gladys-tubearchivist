@@ -1,0 +1,30 @@
+[
+  {
+    "id": "e80ec506-4d05-44f4-abd2-dcfaa2695f34",
+    "title": "Downloading",
+    "group": "download:run",
+    "api_start": true,
+    "api_stop": true,
+    "level": "info",
+    "messages": [
+      "Processing Video: From Scene to Sensor: Synthetic LiDAR for Autonomous Systems — BCON26",
+      "Validate download format"
+    ],
+    "progress": 0.0,
+    "command": null
+  },
+  {
+    "id": "8ee35037-9b92-4b57-a48b-f113f5438929",
+    "title": "Rescan your Subscriptions",
+    "group": "download:scan",
+    "api_start": true,
+    "api_stop": true,
+    "level": "info",
+    "messages": [
+      "Full extracting Channel: 'Blender'",
+      "Parsing item 17/50."
+    ],
+    "progress": 0.34,
+    "command": null
+  }
+]

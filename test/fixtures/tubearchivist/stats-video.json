@@ -1,0 +1,21 @@
+{
+  "doc_count": 2,
+  "media_size": 723191438,
+  "duration": 653,
+  "duration_str": "10m 53s",
+  "type_videos": {
+    "doc_count": 2,
+    "media_size": 723191438,
+    "duration": 653,
+    "duration_str": "10m 53s"
+  },
+  "type_shorts": null,
+  "type_streams": null,
+  "active_true": {
+    "doc_count": 2,
+    "media_size": 723191438,
+    "duration": 653,
+    "duration_str": "10m 53s"
+  },
+  "active_false": null
+}
