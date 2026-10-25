@@ -1,8 +1,8 @@
 {
-  "name": "gladys-integration-template-js",
+  "name": "gladys-tubearchivist",
   "version": "1.0.0",
   "private": true,
-  "description": "Official starter template to build an external integration for Gladys Assistant with the JavaScript SDK.",
+  "description": "Tube Archivist (self-hosted YouTube archive) in Gladys Assistant: new videos, queue, errors, add a video.",
   "type": "module",
   "main": "index.js",
   "scripts": {

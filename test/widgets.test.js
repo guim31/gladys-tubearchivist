@@ -1,77 +1,117 @@
+// -----------------------------------------------------------------------------
+// The `library` widget: content valid for the core (budget, vocabulary), in
+// every language, before and after a download, its buttons and its messages.
+// -----------------------------------------------------------------------------
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { validateWidgetContent } from '@gladysassistant/integration-sdk';
-import { createFakeGladys } from '@gladysassistant/integration-sdk/testing';
-import { buildDiscoveredDevices } from '../src/devices/index.js';
-import { simulateLanSession } from '../src/devices/plug.js';
-import { DEMO_STATUS_WIDGET, WIDGETS, refreshWidgets } from '../src/widgets.js';
-import { normalizeConfig } from '../src/config.js';
+import { FakeTubeArchivist, createWorld } from './helpers/world.js';
+import { videoItem } from '../src/widgets.js';
 
-const gladys = createFakeGladys();
-const config = normalizeConfig();
-const demoStatus = WIDGETS[DEMO_STATUS_WIDGET];
+async function world(t, options) {
+  const w = await createWorld(options);
+  t.after(() => w.app.stop());
+  return w;
+}
 
-// What the SDK passes to onWidgetGet, plus the config index.js adds.
-const getContent = (cfg = config) =>
-  demoStatus.get(gladys, { settings: {}, language: 'en', units: 'metric', config: cfg });
+const get = async (w, language = 'en') => {
+  const ack = await w.fake.widgetGet('library', { settings: {}, language });
+  assert.equal(ack.success, true, ack.error);
+  assert.deepEqual(validateWidgetContent(ack.data.content), [], JSON.stringify(ack.data));
+  return ack.data.content.components;
+};
 
-test('the demo_status content is rendered exactly as sent', async () => {
-  // [] = nothing the core would drop, truncate or trim to the content budget.
-  assert.deepEqual(validateWidgetContent(await getContent()), []);
-});
-
-test('the degraded plug connection content is valid too', async () => {
-  simulateLanSession(false);
-  try {
-    const content = await getContent();
-    assert.deepEqual(validateWidgetContent(content), []);
-    const status = content.components.find((component) => component.type === 'status');
-    assert.ok(
-      status.items.some((item) => item.color === 'warning'),
-      'degraded shows a warning',
+test('the widget shows the figures, the task and the latest videos, in every language', async (t) => {
+  const w = await world(t);
+  w.archivist.archive('x'.repeat(80), 'Kurzgesagt');
+  w.archivist.notifications = [
+    {
+      id: 'n1',
+      title: 'Downloading',
+      group: 'download:run',
+      level: 'info',
+      messages: ['Processing Video: Spring', ' 60.3% of 679.44MiB'],
+      progress: 0.603,
+    },
+  ];
+  await w.hub.pollAll();
+  const tasks = { en: 'Downloading: Spring (60 %)', fr: 'Téléchargement : Spring (60 %)' };
+  for (const language of ['en', 'fr', 'de', 'es']) {
+    const components = await get(w, language);
+    assert.ok(components.length <= 8);
+    assert.ok(components.filter((c) => c.type === 'text').length <= 2);
+    assert.deepEqual(
+      components.filter((c) => c.type === 'value').map((c) => c.value),
+      [2, 1, 1],
+      'today, in the queue, failed',
     );
-  } finally {
-    simulateLanSession(true);
+    const status = components.find((c) => c.type === 'status');
+    if (tasks[language]) {
+      assert.equal(status.items[0].value, tasks[language]);
+    }
+    const list = components.find((c) => c.type === 'card-list');
+    assert.equal(list.items.length, 4);
+    assert.equal(list.items[0].title.length, 60);
+    assert.equal(list.items[0].subtitle, 'Kurzgesagt');
+    assert.equal(
+      list.items[0].date,
+      new Date(Math.floor(w.clock.now() / 1000) * 1000).toISOString(),
+    );
+    const buttons = components.filter((c) => c.type === 'button');
+    assert.deepEqual(
+      buttons.map((b) => b.action.key),
+      ['add', 'rescan'],
+    );
+    assert.deepEqual(
+      buttons[0].action.fields.map((f) => f.key),
+      ['url', 'start'],
+    );
   }
 });
 
-test('the live tiles reference features the integration publishes', async () => {
-  const featureIds = new Set(
-    buildDiscoveredDevices(gladys, config).flatMap((device) =>
-      device.features.map((feature) => feature.external_id),
-    ),
+test('the buttons add a video and start a rescan', async (t) => {
+  const w = await world(t);
+  let ack = await w.fake.widgetAction(
+    'library',
+    'add',
+    {},
+    {
+      values: { url: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ', start: 'queue' },
+    },
   );
-  const liveTiles = (await getContent()).components.filter((c) => c.device_feature);
-  assert.ok(liveTiles.length > 0, 'the template demonstrates a device-bound tile');
-  for (const tile of liveTiles) {
-    assert.ok(featureIds.has(tile.device_feature), `unknown feature ${tile.device_feature}`);
-  }
+  assert.equal(ack.success, true, ack.error);
+  assert.deepEqual(w.archivist.lastAdded, {
+    link: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+    autostart: false,
+  });
+  assert.match(JSON.stringify(ack.data), /Added to the queue/);
+  ack = await w.fake.widgetAction('library', 'rescan', {}, {});
+  assert.equal(ack.success, true, ack.error);
+  assert.deepEqual(w.archivist.started, ['update_subscribed']);
+  ack = await w.fake.widgetAction('library', 'add', {}, { values: { url: 'https://vimeo.com/1' } });
+  assert.equal(ack.success, false);
+  assert.match(ack.error, /YouTube link/);
 });
 
-test('every button action of the content is handled and answers a short toast', async () => {
-  const buttons = (await getContent()).components.filter((c) => c.type === 'button' && c.action);
-  assert.ok(buttons.length > 0, 'the template demonstrates a widget action');
-  for (const { action } of buttons) {
-    const message = await demoStatus.action(gladys, {
-      actionKey: action.key,
-      params: action.params ?? {},
-      settings: {},
-      config,
-    });
-    assert.ok(message.en, 'the toast carries at least the mandatory `en` text');
-    assert.ok(message.en.length <= 200, 'toasts are capped at 200 characters');
-  }
+test('no video yet: a sentence instead of the list', async (t) => {
+  const w = await world(t, { archivist: new FakeTubeArchivist() });
+  const components = await get(w, 'de');
+  assert.equal(components.find((c) => c.type === 'text').text, 'Noch kein Video archiviert.');
 });
 
-test('an unknown widget action fails, so the user sees the error', async () => {
-  await assert.rejects(
-    demoStatus.action(gladys, { actionKey: 'unknown', params: {}, settings: {}, config }),
-    /Unknown widget action/,
-  );
+test('no server, no token, or a server down: a message instead of figures', async (t) => {
+  const empty = await world(t, { config: {} });
+  assert.match((await get(empty))[0].text, /address of your Tube Archivist server/);
+  const noToken = await world(t, { config: { url: '192.0.2.20', language: 'en' } });
+  assert.match((await get(noToken))[0].text, /API token/);
+  const w = await world(t);
+  w.archivist.online = false;
+  await w.hub.pollAll();
+  const components = await get(w, 'fr');
+  assert.equal(components[0].items[0].value, 'Hors ligne');
 });
 
-test('refreshWidgets nudges every widget', () => {
-  const fresh = createFakeGladys();
-  refreshWidgets(fresh);
-  assert.deepEqual(fresh.fake.widgetRefreshes, Object.keys(WIDGETS));
+test('a row without a date or a channel stays valid', () => {
+  assert.deepEqual(videoItem({ title: 'Lonely', channel: '', at: null }), { title: 'Lonely' });
 });

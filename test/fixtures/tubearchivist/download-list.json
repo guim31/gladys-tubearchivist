@@ -1,0 +1,66 @@
+{
+  "data": [
+    {
+      "auto_start": false,
+      "channel_id": "UCSMOQeBJ2RAnuFungnQOxLg",
+      "channel_indexed": true,
+      "channel_name": "Blender",
+      "duration": "2h 04m 42s",
+      "message": "ERROR: [youtube] dVrELpmfcEQ: Requested format is not available. Use --list-formats for a list of available formats",
+      "published": "2026-10-23T09:37:25+00:00",
+      "status": "pending",
+      "timestamp": 1792890372,
+      "title": "Blender Education Community Meeting — BCON26",
+      "vid_thumb_url": "/cache/videos/d/dVrELpmfcEQ.jpg",
+      "vid_type": "videos",
+      "youtube_id": "dVrELpmfcEQ",
+      "_index": "ta_download",
+      "_score": 0
+    },
+    {
+      "auto_start": false,
+      "channel_id": "UCSMOQeBJ2RAnuFungnQOxLg",
+      "channel_indexed": true,
+      "channel_name": "Blender",
+      "duration": "2m 29s",
+      "message": "ERROR: [youtube] sO_lhW8av3U: Requested format is not available. Use --list-formats for a list of available formats",
+      "published": "2026-10-13T14:35:48+00:00",
+      "status": "pending",
+      "timestamp": 1792890380,
+      "title": "Blender Conference 2026 Recap",
+      "vid_thumb_url": "/cache/videos/s/sO_lhW8av3U.jpg",
+      "vid_type": "videos",
+      "youtube_id": "sO_lhW8av3U",
+      "_index": "ta_download",
+      "_score": 0
+    },
+    {
+      "auto_start": false,
+      "channel_id": "UCSMOQeBJ2RAnuFungnQOxLg",
+      "channel_indexed": true,
+      "channel_name": "Blender",
+      "duration": "18m 26s",
+      "message": "ERROR: [youtube] SVJiCL3K0j4: Requested format is not available. Use --list-formats for a list of available formats",
+      "published": "2026-09-28T17:42:08+00:00",
+      "status": "pending",
+      "timestamp": 1792890390,
+      "title": "The Future of Rendering — BCON26",
+      "vid_thumb_url": "/cache/videos/s/SVJiCL3K0j4.jpg",
+      "vid_type": "videos",
+      "youtube_id": "SVJiCL3K0j4",
+      "_index": "ta_download",
+      "_score": 0
+    }
+  ],
+  "paginate": {
+    "page_size": 25,
+    "page_from": 0,
+    "prev_pages": null,
+    "current_page": 0,
+    "max_hits": false,
+    "params": "filter=pending&error=true",
+    "last_page": 0,
+    "next_pages": [],
+    "total_hits": 19
+  }
+}

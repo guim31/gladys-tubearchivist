@@ -1,177 +1,669 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Tube Archivist",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Tube Archivist in Gladys: new YouTube videos archived, queue, failed downloads, add a video.",
+    "fr": "Tube Archivist dans Gladys : nouvelles vidéos YouTube archivées, file d'attente, erreurs, ajout.",
+    "de": "Tube Archivist in Gladys: neue archivierte YouTube-Videos, Warteschlange, Fehler, Video hinzufügen.",
+    "es": "Tube Archivist en Gladys: nuevos vídeos de YouTube archivados, cola, descargas fallidas, añadir."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
-  "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "docker_image": "ghcr.io/guim31/gladys-tubearchivist:1.0.0",
+  "gladys_version": ">=5.2.0",
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-tubearchivist/main/cover.png",
+  "categories": ["multimedia"],
+  "transports": ["local"],
   "config_schema": [
     {
-      "key": "intro",
+      "key": "server",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Tube Archivist server",
+        "fr": "Serveur Tube Archivist",
+        "de": "Tube-Archivist-Server",
+        "es": "Servidor Tube Archivist"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Address of Tube Archivist and its API token. The integration reads the library and the queue; it only adds videos and starts a rescan when you ask for it.",
+        "fr": "Adresse de Tube Archivist et son jeton d'API. L'intégration lit la bibliothèque et la file ; elle n'ajoute de vidéo et ne lance de recherche que si vous le demandez.",
+        "de": "Adresse von Tube Archivist und sein API-Token. Die Integration liest Bibliothek und Warteschlange; sie fügt Videos nur hinzu und startet eine Suche nur, wenn du es verlangst.",
+        "es": "Dirección de Tube Archivist y su token de API. La integración lee la biblioteca y la cola; solo añade vídeos o lanza una búsqueda cuando usted lo pide."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://www.tubearchivist.com",
+          "label": {
+            "en": "Tube Archivist website",
+            "fr": "Site de Tube Archivist",
+            "de": "Website von Tube Archivist",
+            "es": "Sitio web de Tube Archivist"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "url",
+      "type": "string",
+      "label": {
+        "en": "Address",
+        "fr": "Adresse",
+        "de": "Adresse",
+        "es": "Dirección"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
-    },
-    {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
       "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+        "en": "IP address or name of the server, with the port of the web interface (8000 by default).",
+        "fr": "Adresse IP ou nom du serveur, avec le port de l'interface web (8000 par défaut).",
+        "de": "IP-Adresse oder Name des Servers, mit dem Port der Weboberfläche (standardmäßig 8000).",
+        "es": "Dirección IP o nombre del servidor, con el puerto de la interfaz web (8000 por defecto)."
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
-    },
-    {
-      "key": "unit",
-      "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "placeholder": {
+        "en": "e.g. 192.168.1.2:8000",
+        "fr": "ex. 192.168.1.2:8000",
+        "de": "z. B. 192.168.1.2:8000",
+        "es": "p. ej. 192.168.1.2:8000"
+      },
       "required": false,
-      "default": "celsius",
+      "default": ""
+    },
+    {
+      "key": "token",
+      "type": "secret",
+      "label": {
+        "en": "API token",
+        "fr": "Jeton d'API",
+        "de": "API-Token",
+        "es": "Token de API"
+      },
+      "description": {
+        "en": "Settings → Application → API token in Tube Archivist, logged in as an admin.",
+        "fr": "Settings → Application → API token dans Tube Archivist, connecté en administrateur.",
+        "de": "Settings → Application → API token in Tube Archivist, als Admin angemeldet.",
+        "es": "Settings → Application → API token en Tube Archivist, con una sesión de administrador."
+      },
+      "required": false
+    },
+    {
+      "key": "poll_interval",
+      "type": "select",
+      "label": {
+        "en": "Refresh interval",
+        "fr": "Intervalle de rafraîchissement",
+        "de": "Aktualisierungsintervall",
+        "es": "Intervalo de actualización"
+      },
+      "description": {
+        "en": "How often Tube Archivist is read: new videos, queue, errors, task in progress.",
+        "fr": "Fréquence de lecture de Tube Archivist : nouvelles vidéos, file, erreurs, tâche en cours.",
+        "de": "Wie oft Tube Archivist gelesen wird: neue Videos, Warteschlange, Fehler, laufende Aufgabe.",
+        "es": "Con qué frecuencia se lee Tube Archivist: vídeos nuevos, cola, errores, tarea en curso."
+      },
+      "required": false,
+      "default": "120",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "60",
+          "label": {
+            "en": "1 minute",
+            "fr": "1 minute",
+            "de": "1 Minute",
+            "es": "1 minuto"
+          }
+        },
+        {
+          "value": "120",
+          "label": {
+            "en": "2 minutes",
+            "fr": "2 minutes",
+            "de": "2 Minuten",
+            "es": "2 minutos"
+          }
+        },
+        {
+          "value": "300",
+          "label": {
+            "en": "5 minutes",
+            "fr": "5 minutes",
+            "de": "5 Minuten",
+            "es": "5 minutos"
+          }
+        },
+        {
+          "value": "600",
+          "label": {
+            "en": "10 minutes",
+            "fr": "10 minutes",
+            "de": "10 Minuten",
+            "es": "10 minutos"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the feature names",
+        "fr": "Langue des noms de fonctionnalités",
+        "de": "Sprache der Funktionsnamen",
+        "es": "Idioma de los nombres de funciones"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "Names given to the features when the device is added, the task in progress and the sentences of the scene actions.",
+        "fr": "Noms donnés aux fonctionnalités à l'ajout de l'appareil, tâche en cours et phrases des actions de scène.",
+        "de": "Namen der Funktionen beim Hinzufügen des Geräts, laufende Aufgabe und Sätze der Szenenaktionen.",
+        "es": "Nombres de las funciones al añadir el dispositivo, tarea en curso y frases de las acciones de escena."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
+      },
+      "description": {
+        "en": "Reads Tube Archivist now and reports what it finds.",
+        "fr": "Lit Tube Archivist maintenant et indique ce qu'il trouve.",
+        "de": "Liest Tube Archivist sofort und meldet, was es findet.",
+        "es": "Lee Tube Archivist ahora e indica lo que encuentra."
+      },
+      "timeout_seconds": 60
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "video_archived",
+      "label": {
+        "en": "Tube Archivist video archived",
+        "fr": "Vidéo archivée par Tube Archivist",
+        "de": "Video von Tube Archivist archiviert",
+        "es": "Vídeo archivado por Tube Archivist"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "Tube Archivist has just downloaded a new video into the library.",
+        "fr": "Tube Archivist vient de télécharger une nouvelle vidéo dans la bibliothèque.",
+        "de": "Tube Archivist hat gerade ein neues Video in die Bibliothek heruntergeladen.",
+        "es": "Tube Archivist acaba de descargar un nuevo vídeo en la biblioteca."
       },
       "fields": [
         {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
+          "key": "channel",
+          "type": "string",
+          "label": {
+            "en": "Channel (empty: any)",
+            "fr": "Chaîne (vide : n'importe laquelle)",
+            "de": "Kanal (leer: beliebig)",
+            "es": "Canal (vacío: cualquiera)"
+          },
+          "description": {
+            "en": "Name of the YouTube channel exactly as Tube Archivist shows it.",
+            "fr": "Nom de la chaîne YouTube, exactement comme Tube Archivist l'affiche.",
+            "de": "Name des YouTube-Kanals, genau wie Tube Archivist ihn anzeigt.",
+            "es": "Nombre del canal de YouTube, exactamente como lo muestra Tube Archivist."
+          }
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "channel",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Channel",
+            "fr": "Chaîne",
+            "de": "Kanal",
+            "es": "Canal"
+          }
+        },
+        {
+          "key": "title",
+          "type": "string",
+          "label": {
+            "en": "Video title",
+            "fr": "Titre de la vidéo",
+            "de": "Titel des Videos",
+            "es": "Título del vídeo"
+          }
+        },
+        {
+          "key": "published",
+          "type": "string",
+          "label": {
+            "en": "Publication date on YouTube",
+            "fr": "Date de publication sur YouTube",
+            "de": "Veröffentlichungsdatum auf YouTube",
+            "es": "Fecha de publicación en YouTube"
+          }
+        },
+        {
+          "key": "duration",
+          "type": "string",
+          "label": {
+            "en": "Duration",
+            "fr": "Durée",
+            "de": "Dauer",
+            "es": "Duración"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Page of the video in Tube Archivist",
+            "fr": "Page de la vidéo dans Tube Archivist",
+            "de": "Seite des Videos in Tube Archivist",
+            "es": "Página del vídeo en Tube Archivist"
+          }
+        },
+        {
+          "key": "downloaded_today",
+          "type": "number",
+          "label": {
+            "en": "Videos downloaded today",
+            "fr": "Vidéos téléchargées aujourd'hui",
+            "de": "Heute heruntergeladene Videos",
+            "es": "Vídeos descargados hoy"
+          }
+        }
+      ]
+    },
+    {
+      "key": "download_failed",
+      "label": {
+        "en": "Tube Archivist download failed",
+        "fr": "Téléchargement Tube Archivist en erreur",
+        "de": "Tube-Archivist-Download fehlgeschlagen",
+        "es": "Descarga de Tube Archivist fallida"
+      },
+      "description": {
+        "en": "The download of a video of the queue failed (video unavailable, blocked, yt-dlp error).",
+        "fr": "Le téléchargement d'une vidéo de la file a échoué (vidéo indisponible, bloquée, erreur de yt-dlp).",
+        "de": "Der Download eines Videos der Warteschlange ist fehlgeschlagen (nicht verfügbar, blockiert, yt-dlp-Fehler).",
+        "es": "La descarga de un vídeo de la cola ha fallado (vídeo no disponible, bloqueado, error de yt-dlp)."
+      },
+      "fields": [
+        {
+          "key": "channel",
+          "type": "string",
+          "label": {
+            "en": "Channel (empty: any)",
+            "fr": "Chaîne (vide : n'importe laquelle)",
+            "de": "Kanal (leer: beliebig)",
+            "es": "Canal (vacío: cualquiera)"
+          },
+          "description": {
+            "en": "Name of the YouTube channel exactly as Tube Archivist shows it.",
+            "fr": "Nom de la chaîne YouTube, exactement comme Tube Archivist l'affiche.",
+            "de": "Name des YouTube-Kanals, genau wie Tube Archivist ihn anzeigt.",
+            "es": "Nombre del canal de YouTube, exactamente como lo muestra Tube Archivist."
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "channel",
+          "type": "string",
+          "label": {
+            "en": "Channel",
+            "fr": "Chaîne",
+            "de": "Kanal",
+            "es": "Canal"
+          }
+        },
+        {
+          "key": "title",
+          "type": "string",
+          "label": {
+            "en": "Video title",
+            "fr": "Titre de la vidéo",
+            "de": "Titel des Videos",
+            "es": "Título del vídeo"
+          }
+        },
+        {
+          "key": "error",
+          "type": "string",
+          "label": {
+            "en": "Error message (yt-dlp)",
+            "fr": "Message d'erreur (yt-dlp)",
+            "de": "Fehlermeldung (yt-dlp)",
+            "es": "Mensaje de error (yt-dlp)"
+          }
+        },
+        {
+          "key": "youtube_url",
+          "type": "string",
+          "label": {
+            "en": "Link of the video on YouTube",
+            "fr": "Lien de la vidéo sur YouTube",
+            "de": "Link des Videos auf YouTube",
+            "es": "Enlace del vídeo en YouTube"
+          }
+        }
+      ]
+    },
+    {
+      "key": "queue_empty",
+      "label": {
+        "en": "Tube Archivist queue emptied",
+        "fr": "File Tube Archivist vidée",
+        "de": "Tube-Archivist-Warteschlange leer",
+        "es": "Cola de Tube Archivist vacía"
+      },
+      "description": {
+        "en": "Tube Archivist has no video left to download (the failed ones are not counted).",
+        "fr": "Tube Archivist n'a plus aucune vidéo à télécharger (celles en erreur ne comptent pas).",
+        "de": "Tube Archivist hat kein Video mehr herunterzuladen (fehlgeschlagene zählen nicht).",
+        "es": "Tube Archivist ya no tiene ningún vídeo por descargar (los fallidos no cuentan)."
+      },
+      "variables": [
+        {
+          "key": "downloaded_today",
+          "type": "number",
+          "label": {
+            "en": "Videos downloaded today",
+            "fr": "Vidéos téléchargées aujourd'hui",
+            "de": "Heute heruntergeladene Videos",
+            "es": "Vídeos descargados hoy"
+          }
+        },
+        {
+          "key": "errors",
+          "type": "number",
+          "label": {
+            "en": "Failed downloads",
+            "fr": "Téléchargements en erreur",
+            "de": "Fehlgeschlagene Downloads",
+            "es": "Descargas fallidas"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "read_latest",
+      "label": {
+        "en": "Read the latest Tube Archivist videos",
+        "fr": "Lire les dernières vidéos Tube Archivist",
+        "de": "Neueste Tube-Archivist-Videos lesen",
+        "es": "Leer los últimos vídeos de Tube Archivist"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "A sentence for a message or a voice announcement: videos of the day, the latest ones, queue, errors.",
+        "fr": "Une phrase pour un message ou une annonce vocale : vidéos du jour, dernières vidéos, file, erreurs.",
+        "de": "Ein Satz für eine Nachricht oder Sprachansage: Videos des Tages, die neuesten, Warteschlange, Fehler.",
+        "es": "Una frase para un mensaje o un aviso de voz: vídeos del día, los últimos, cola, errores."
+      },
+      "timeout_seconds": 120,
       "fields": [
         {
-          "key": "device",
+          "key": "count",
           "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
+          "label": {
+            "en": "Videos named in the sentence",
+            "fr": "Vidéos citées dans la phrase",
+            "de": "Im Satz genannte Videos",
+            "es": "Vídeos citados en la frase"
+          },
+          "required": false,
+          "default": "3",
+          "options": [
+            {
+              "value": "1",
+              "label": {
+                "en": "1",
+                "fr": "1",
+                "de": "1",
+                "es": "1"
+              }
+            },
+            {
+              "value": "3",
+              "label": {
+                "en": "3",
+                "fr": "3",
+                "de": "3",
+                "es": "3"
+              }
+            },
+            {
+              "value": "5",
+              "label": {
+                "en": "5",
+                "fr": "5",
+                "de": "5",
+                "es": "5"
+              }
+            },
+            {
+              "value": "10",
+              "label": {
+                "en": "10",
+                "fr": "10",
+                "de": "10",
+                "es": "10"
+              }
+            }
+          ]
         }
       ],
       "outputs": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Sentence",
+            "fr": "Phrase",
+            "de": "Satz",
+            "es": "Frase"
+          }
+        },
+        {
+          "key": "downloaded_today",
+          "type": "number",
+          "label": {
+            "en": "Videos downloaded today",
+            "fr": "Vidéos téléchargées aujourd'hui",
+            "de": "Heute heruntergeladene Videos",
+            "es": "Vídeos descargados hoy"
+          }
+        },
+        {
+          "key": "pending",
+          "type": "number",
+          "label": {
+            "en": "Videos in the queue",
+            "fr": "Vidéos en file d'attente",
+            "de": "Videos in der Warteschlange",
+            "es": "Vídeos en la cola"
+          }
+        },
+        {
+          "key": "errors",
+          "type": "number",
+          "label": {
+            "en": "Failed downloads",
+            "fr": "Téléchargements en erreur",
+            "de": "Fehlgeschlagene Downloads",
+            "es": "Descargas fallidas"
+          }
+        },
+        {
+          "key": "videos",
+          "type": "number",
+          "label": {
+            "en": "Archived videos",
+            "fr": "Vidéos archivées",
+            "de": "Archivierte Videos",
+            "es": "Vídeos archivados"
+          }
+        },
+        {
+          "key": "last_title",
+          "type": "string",
+          "label": {
+            "en": "Title of the last video",
+            "fr": "Titre de la dernière vidéo",
+            "de": "Titel des neuesten Videos",
+            "es": "Título del último vídeo"
+          }
+        },
+        {
+          "key": "last_channel",
+          "type": "string",
+          "label": {
+            "en": "Channel of the last video",
+            "fr": "Chaîne de la dernière vidéo",
+            "de": "Kanal des neuesten Videos",
+            "es": "Canal del último vídeo"
+          }
+        }
+      ]
+    },
+    {
+      "key": "rescan_subscriptions",
+      "label": {
+        "en": "Rescan the Tube Archivist subscriptions",
+        "fr": "Rechercher les nouveautés des abonnements Tube Archivist",
+        "de": "Tube-Archivist-Abos nach Neuem durchsuchen",
+        "es": "Buscar novedades de las suscripciones de Tube Archivist"
+      },
+      "description": {
+        "en": "Searches the subscribed channels for new videos now; the channels set to auto start are then downloaded.",
+        "fr": "Cherche maintenant les nouvelles vidéos des chaînes suivies ; celles en démarrage automatique sont ensuite téléchargées.",
+        "de": "Sucht jetzt nach neuen Videos der abonnierten Kanäle; Kanäle mit Autostart werden danach heruntergeladen.",
+        "es": "Busca ahora nuevos vídeos de los canales suscritos; los canales con inicio automático se descargan después."
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "key": "add_video",
+      "label": {
+        "en": "Add a video to Tube Archivist",
+        "fr": "Ajouter une vidéo à Tube Archivist",
+        "de": "Video zu Tube Archivist hinzufügen",
+        "es": "Añadir un vídeo a Tube Archivist"
+      },
+      "description": {
+        "en": "Adds a YouTube link (video, playlist, channel) to the download queue.",
+        "fr": "Ajoute un lien YouTube (vidéo, playlist, chaîne) à la file de téléchargement.",
+        "de": "Fügt einen YouTube-Link (Video, Playlist, Kanal) zur Download-Warteschlange hinzu.",
+        "es": "Añade un enlace de YouTube (vídeo, lista, canal) a la cola de descargas."
+      },
+      "timeout_seconds": 60,
+      "fields": [
+        {
+          "key": "url",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "YouTube link",
+            "fr": "Lien YouTube",
+            "de": "YouTube-Link",
+            "es": "Enlace de YouTube"
+          },
+          "description": {
+            "en": "A video, a playlist or a channel. A scene variable works too.",
+            "fr": "Une vidéo, une playlist ou une chaîne. Une variable de scène convient aussi.",
+            "de": "Ein Video, eine Playlist oder ein Kanal. Auch eine Szenenvariable geht.",
+            "es": "Un vídeo, una lista o un canal. También sirve una variable de escena."
+          }
+        },
+        {
+          "key": "start",
+          "type": "select",
+          "label": {
+            "en": "Download",
+            "fr": "Téléchargement",
+            "de": "Download",
+            "es": "Descarga"
+          },
+          "required": false,
+          "default": "now",
+          "options": [
+            {
+              "value": "now",
+              "label": {
+                "en": "At once",
+                "fr": "Tout de suite",
+                "de": "Sofort",
+                "es": "Ahora mismo"
+              }
+            },
+            {
+              "value": "queue",
+              "label": {
+                "en": "In turn",
+                "fr": "À son tour",
+                "de": "Der Reihe nach",
+                "es": "Por turno"
+              }
+            }
+          ]
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "library",
+      "label": {
+        "en": "Tube Archivist",
+        "fr": "Tube Archivist",
+        "de": "Tube Archivist",
+        "es": "Tube Archivist"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Latest videos archived, videos of the day, queue, failed downloads, task in progress; add a video.",
+        "fr": "Dernières vidéos archivées, vidéos du jour, file, erreurs, tâche en cours ; ajout d'une vidéo.",
+        "de": "Neueste Videos, Videos des Tages, Warteschlange, Fehler, laufende Aufgabe; Video hinzufügen.",
+        "es": "Últimos vídeos archivados, vídeos del día, cola, errores, tarea en curso; añadir un vídeo."
+      },
+      "icon": "youtube"
     }
   ]
 }

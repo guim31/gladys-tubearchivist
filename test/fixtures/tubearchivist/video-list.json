@@ -1,0 +1,165 @@
+{
+  "data": [
+    {
+      "active": true,
+      "category": [
+        "Film & Animation"
+      ],
+      "channel": {
+        "channel_id": "UCSMOQeBJ2RAnuFungnQOxLg",
+        "channel_active": true,
+        "channel_banner_url": "/cache/channels/UCSMOQeBJ2RAnuFungnQOxLg_banner.jpg",
+        "channel_thumb_url": "/cache/channels/UCSMOQeBJ2RAnuFungnQOxLg_thumb.jpg",
+        "channel_tvart_url": "/cache/channels/UCSMOQeBJ2RAnuFungnQOxLg_tvart.jpg",
+        "channel_description": "Official YouTube channel for Blender, the Free and Open Sour",
+        "channel_last_refresh": "2026-10-25T01:04:51+00:00",
+        "channel_name": "Blender",
+        "channel_subs": 1250000,
+        "channel_subscribed": true,
+        "channel_tags": [
+          "blender",
+          "Blender Foundation",
+          "3d"
+        ],
+        "channel_tabs": [
+          "videos",
+          "streams",
+          "shorts"
+        ]
+      },
+      "comment_count": null,
+      "date_downloaded": 1792890290,
+      "description": "UHD High Frame rate version of the iconic short film by Blender, Big Buck Bunny.",
+      "media_size": 722715449,
+      "media_url": "/youtube/UCSMOQeBJ2RAnuFungnQOxLg/aqz-KE-bpKQ.mp4",
+      "player": {
+        "watched": false,
+        "duration": 634,
+        "duration_str": "10m 34s"
+      },
+      "playlist": [],
+      "published": "2014-11-10T14:05:55+00:00",
+      "sponsorblock": null,
+      "stats": {
+        "like_count": 110262,
+        "average_rating": 0.0,
+        "view_count": 23466821,
+        "dislike_count": 0
+      },
+      "streams": [
+        {
+          "bitrate": 8976834,
+          "codec": "av1",
+          "height": 2160,
+          "index": 0,
+          "type": "video",
+          "width": 3840
+        },
+        {
+          "bitrate": 125786,
+          "codec": "opus",
+          "index": 1,
+          "type": "audio"
+        }
+      ],
+      "subtitles": [],
+      "tags": [
+        "blender",
+        "animation",
+        "4K"
+      ],
+      "title": "Big Buck Bunny 60fps 4K - Official Blender Foundation Short Film",
+      "vid_last_refresh": "2026-10-25T01:04:50+00:00",
+      "vid_thumb_url": "/cache/videos/a/aqz-KE-bpKQ.jpg",
+      "vid_type": "videos",
+      "youtube_id": "aqz-KE-bpKQ",
+      "_index": "ta_video",
+      "_score": 0.0
+    },
+    {
+      "active": true,
+      "category": [
+        "Film & Animation"
+      ],
+      "channel": {
+        "channel_id": "UC4QobU6STFB0P71PMvOGN5A",
+        "channel_active": true,
+        "channel_banner_url": "/cache/channels/UC4QobU6STFB0P71PMvOGN5A_banner.jpg",
+        "channel_thumb_url": "/cache/channels/UC4QobU6STFB0P71PMvOGN5A_thumb.jpg",
+        "channel_tvart_url": "/cache/channels/UC4QobU6STFB0P71PMvOGN5A_tvart.jpg",
+        "channel_description": null,
+        "channel_last_refresh": "2026-10-25T01:03:49+00:00",
+        "channel_name": "jawed",
+        "channel_subs": 6710000,
+        "channel_subscribed": false,
+        "channel_tags": [
+          "me at the zoo",
+          "jawed karim",
+          "first youtube video"
+        ],
+        "channel_tabs": [
+          "videos"
+        ]
+      },
+      "comment_count": null,
+      "date_downloaded": 1792890229,
+      "description": "Microplastics are accumulating in human brains at an alarming rate\nhttps://www.y",
+      "media_size": 475989,
+      "media_url": "/youtube/UC4QobU6STFB0P71PMvOGN5A/jNQXAC9IVRw.mp4",
+      "player": {
+        "watched": false,
+        "duration": 19,
+        "duration_str": "19s"
+      },
+      "playlist": [],
+      "published": "2005-04-24T03:31:52+00:00",
+      "sponsorblock": null,
+      "stats": {
+        "like_count": 20111216,
+        "average_rating": 0.0,
+        "view_count": 446370202,
+        "dislike_count": 0
+      },
+      "streams": [
+        {
+          "bitrate": 92903,
+          "codec": "av1",
+          "height": 240,
+          "index": 0,
+          "type": "video",
+          "width": 320
+        },
+        {
+          "bitrate": 103129,
+          "codec": "opus",
+          "index": 1,
+          "type": "audio"
+        }
+      ],
+      "subtitles": [],
+      "tags": [
+        "me at the zoo",
+        "jawed karim",
+        "first youtube video"
+      ],
+      "title": "Me at the zoo",
+      "vid_last_refresh": "2026-10-25T01:03:49+00:00",
+      "vid_thumb_url": "/cache/videos/j/jNQXAC9IVRw.jpg",
+      "vid_type": "videos",
+      "youtube_id": "jNQXAC9IVRw",
+      "_index": "ta_video",
+      "_score": 0.0
+    }
+  ],
+  "paginate": {
+    "page_size": 25,
+    "page_from": 0,
+    "prev_pages": null,
+    "current_page": 0,
+    "max_hits": false,
+    "params": "sort=downloaded&order=desc",
+    "last_page": 0,
+    "next_pages": [],
+    "total_hits": 2
+  }
+}

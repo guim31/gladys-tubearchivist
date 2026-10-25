@@ -1,41 +1,55 @@
 // -----------------------------------------------------------------------------
-// Scene actions (SDK v0.14+, Gladys 5.1+).
+// Scene action handlers (manifest `scene_actions`, Gladys 5.1+).
 //
-// A scene action is an OPERATION a scene author places in a scene, with
-// parameters and a result: "identify this device", "take a snapshot", "clean
-// these rooms". Each one is declared in the manifest `scene_actions` field
-// (key, label, `fields` in the config_schema grammar, scalar `outputs`) and
-// handled here, keyed by that same `key`; index.js registers every entry with
-// `gladys.onSceneAction(key, ...)`.
-//
-// Scene TRIGGERS are the other direction ("this happened"): they are fired by
-// the device that observes the event, see src/devices/motionSensor.js.
-//
-// The rules that matter:
-//   - `fields` arrive RESOLVED: scene variables substituted, defaults applied,
-//     validated by the core; a `"source": "devices"` field is the chosen
-//     device external_id;
-//   - resolve an object of the declared `outputs` (scalars only), readable by
-//     the following actions of the scene, or `undefined` for none. Keys not
-//     declared in the manifest are dropped by the core;
-//   - throwing fails THIS action only: the scene logs it and continues. A
-//     scene action is never a condition: return an output and let the scene
-//     author gate on it;
-//   - never fire a scene event as a consequence of a received action: a scene
-//     bound to that event would loop through the integration.
+// `read_latest`: read Tube Archivist now and give a sentence for a message or
+// a voice announcement (videos of the day, the latest ones, the queue), and
+// the figures separately for the conditions of the scene. Read only.
+// `rescan_subscriptions`: search the subscribed channels for new videos now
+// (the task "Rescan your Subscriptions"); the channels set to auto start in
+// Tube Archivist are then downloaded.
+// `add_video`: add a YouTube link (video, playlist, channel) to the queue,
+// downloaded at once or in turn. A link Tube Archivist refuses fails the
+// action with its reason; a download that fails later fires `download_failed`.
 // -----------------------------------------------------------------------------
 
-import { createLogger } from '@gladysassistant/integration-sdk';
-import { signalDevice } from './devices/index.js';
+import { RECENT_SIZE } from './hub.js';
 
-const logger = createLogger({ name: 'scenes' });
+export const LATEST_COUNTS = ['1', '3', '5', '10'];
+export const DEFAULT_LATEST_COUNT = '3';
+export const START_OPTIONS = ['now', 'queue'];
+export const DEFAULT_START = 'now';
 
 export const SCENE_ACTIONS = {
-  // The ack is awaited under the action's `timeout_seconds` (15 s in the
-  // manifest), counted from the moment the scene reaches the action.
-  async identify_device(gladys, { fields, config }) {
-    logger.info(`Scene action identify_device <- ${fields.device}`);
-    const signalled = await signalDevice(gladys, fields.device, config);
-    return { signalled };
+  async read_latest(hub, { fields = {} }) {
+    hub.ensureServer();
+    // Read now: the sentence says what is true at the time of the scene.
+    await hub.refresh();
+    const raw = String(fields.count ?? DEFAULT_LATEST_COUNT);
+    const count = Math.min(
+      Number(LATEST_COUNTS.includes(raw) ? raw : DEFAULT_LATEST_COUNT),
+      RECENT_SIZE,
+    );
+    const totals = hub.server.reachable ? hub.totals() : null;
+    const last = hub.server.reachable ? hub.recent()[0] : null;
+    return {
+      summary: hub.summary(count),
+      downloaded_today: totals?.downloadedToday ?? 0,
+      pending: totals?.pending ?? 0,
+      errors: totals?.errors ?? 0,
+      videos: totals?.videos ?? 0,
+      last_title: last?.title ?? '',
+      last_channel: last?.channel ?? '',
+    };
+  },
+
+  async rescan_subscriptions(hub) {
+    await hub.rescan();
+    return {};
+  },
+
+  async add_video(hub, { fields = {} }) {
+    const start = START_OPTIONS.includes(fields.start) ? fields.start : DEFAULT_START;
+    await hub.addVideo(fields.url, start);
+    return {};
   },
 };

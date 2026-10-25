@@ -1,67 +1,179 @@
-# Template de démonstration
+# Tube Archivist
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Faites entrer votre serveur [Tube Archivist](https://www.tubearchivist.com)
+(l'archive auto-hébergée de chaînes YouTube, basée sur yt-dlp) dans Gladys, sur
+votre réseau local : les vidéos archivées, les chaînes suivies, la taille de la
+bibliothèque, la file de téléchargement et ses erreurs, la tâche en cours, les
+dernières vidéos sur un tableau de bord, des scènes qui réagissent à l'arrivée
+d'une nouvelle vidéo, à un téléchargement en erreur ou à la file vidée, et des
+actions de scène pour ajouter une vidéo ou rechercher les nouveautés de vos
+abonnements.
 
-## Ce que vous obtenez
+L'intégration a été testée avec un vrai Tube Archivist v0.5.12 (les images
+Docker officielles, avec de vrais téléchargements depuis YouTube), pas encore
+dans une vraie installation de Gladys : vos retours sont les bienvenus sur le
+[forum Gladys](https://community.gladysassistant.com) ou dans les
+[issues](https://github.com/guim31/gladys-tubearchivist/issues).
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+## Ce qu'il vous faut
 
-## Configuration
+- Gladys Assistant 5.2.0 ou plus récent.
+- Un serveur **Tube Archivist** v0.5 ou plus récent, joignable depuis Gladys
+  (même réseau), sur le port de son interface web (`8000` par défaut).
+- Le **jeton d'API** d'un administrateur de Tube Archivist : connectez-vous en
+  administrateur, ouvrez **Settings → Application** et copiez le jeton affiché
+  sous **API token**. La file et les tâches sont réservées aux administrateurs
+  dans Tube Archivist.
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+## Mise en route
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+1. Installez l'intégration depuis le catalogue de Gladys.
+2. Dans **Configuration**, saisissez l'**Adresse** de Tube Archivist (par
+   exemple `192.168.1.2:8000` ; sans port, `8000` est utilisé) et le **Jeton
+   d'API**.
+3. Enregistrez, puis cliquez sur **Tester la connexion** : le message sous le
+   bouton donne la version de Tube Archivist, les vidéos et la taille de la
+   bibliothèque, les chaînes suivies, la file et les erreurs.
+4. Ouvrez l'onglet **Découverte** : un appareil pour le serveur. Cliquez sur
+   **Ajouter**, choisissez une pièce et enregistrez.
 
-## Actions
+Options :
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+- **Intervalle de rafraîchissement** : de 1 à 10 minutes (2 minutes par
+  défaut). Chaque rafraîchissement fait huit petites requêtes à l'API de Tube
+  Archivist.
+- **Langue des noms de fonctionnalités** : les noms donnés aux fonctionnalités
+  à l'ajout de l'appareil (français par défaut), le texte de la tâche en cours
+  et les phrases des actions de scène.
 
-## Scènes
+L'intégration lit Tube Archivist. Elle n'y change quelque chose que si vous le
+demandez : **Ajouter une vidéo** et **Rechercher** (boutons du widget ou
+actions de scène).
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
+## L'appareil
 
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
+Un appareil, **Tube Archivist** suivi de l'adresse du serveur :
+
+| Fonctionnalité            | Ce qu'elle donne                                                       |
+| ------------------------- | ---------------------------------------------------------------------- |
+| En ligne                  | 1 quand Tube Archivist répond, 0 sinon                                 |
+| Vidéos archivées          | vidéos de la bibliothèque                                              |
+| Chaînes suivies           | chaînes auxquelles vous êtes abonné dans Tube Archivist                |
+| Taille de la bibliothèque | taille des vidéos sur le disque, en Go                                 |
+| Vidéos en file d'attente  | vidéos qui attendent leur téléchargement (hors erreurs)                |
+| Téléchargements en erreur | vidéos de la file dont le téléchargement a échoué                      |
+| Téléchargées aujourd'hui  | vidéos téléchargées depuis minuit, comptées par Tube Archivist         |
+| Tâche en cours            | ce que fait Tube Archivist (téléchargement, recherche…), ou « Aucune » |
+| Dernière vidéo archivée   | son titre et sa chaîne, en texte                                       |
+
+Les chiffres bougent à chaque rafraîchissement. **Tâche en cours** donne la
+vidéo en cours de téléchargement ou la chaîne en cours de recherche, avec
+l'avancement.
 
 ## Tableau de bord
 
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+Le widget **Tube Archivist** affiche trois tuiles (aujourd'hui, en attente, en
+erreur), la tâche en cours, la liste des dernières vidéos archivées (titre,
+chaîne et date) et deux boutons :
+
+- **Ajouter une vidéo** : un formulaire avec le lien YouTube (une vidéo, une
+  playlist ou une chaîne) et le moment du téléchargement : **Tout de suite**
+  (en tête de file, le téléchargement démarre) ou **À son tour** (en fin de
+  file).
+- **Rechercher** : cherche maintenant les nouvelles vidéos de vos chaînes
+  suivies.
+
+Ajoutez-le depuis l'éditeur du tableau de bord ; il ne demande aucun réglage et
+fonctionne avant même l'ajout de l'appareil.
+
+## Scènes
+
+### Déclencheurs
+
+- **Vidéo archivée par Tube Archivist** : Tube Archivist vient de télécharger
+  une nouvelle vidéo dans la bibliothèque. Filtre : **Chaîne** (le nom de la
+  chaîne YouTube, exactement comme Tube Archivist l'affiche ; vide : n'importe
+  laquelle). Informations transmises aux actions : la chaîne, le titre, la date
+  de publication sur YouTube, la durée, la page de la vidéo dans Tube
+  Archivist, et le nombre de vidéos téléchargées aujourd'hui.
+- **Téléchargement Tube Archivist en erreur** : le téléchargement d'une vidéo
+  de la file a échoué (vidéo indisponible, réservée aux membres, bloquée,
+  erreur de yt-dlp). Même filtre. Informations : la chaîne, le titre, le
+  message d'erreur et le lien de la vidéo sur YouTube.
+- **File Tube Archivist vidée** : Tube Archivist n'a plus aucune vidéo à
+  télécharger (celles en erreur restent dans sa file et ne comptent pas).
+  Informations : les vidéos téléchargées aujourd'hui et les téléchargements en
+  erreur.
+
+Chaque événement est annoncé une seule fois, même après un redémarrage de
+l'intégration. Ce que Tube Archivist avait déjà au démarrage de l'intégration
+n'est pas annoncé.
+
+### Actions
+
+- **Lire les dernières vidéos Tube Archivist** : lit Tube Archivist maintenant
+  et donne une phrase pour un message ou une annonce vocale, par exemple
+  « Tube Archivist : 2 vidéos téléchargées aujourd'hui ; dernières : « … » (…),
+  « … » (…). 4 en file d'attente, 1 en erreur. », avec les chiffres à part
+  (téléchargées aujourd'hui, en file d'attente, en erreur, vidéos archivées,
+  titre et chaîne de la dernière vidéo). Option : le nombre de vidéos citées
+  dans la phrase (3 par défaut).
+- **Rechercher les nouveautés des abonnements Tube Archivist** : cherche
+  maintenant les nouvelles vidéos de vos chaînes suivies, comme **Rescan your
+  Subscriptions** dans Tube Archivist. Les nouvelles vidéos entrent dans la
+  file ; les chaînes en démarrage automatique sont ensuite téléchargées.
+- **Ajouter une vidéo à Tube Archivist** : ajoute un lien YouTube (vidéo,
+  playlist, chaîne) à la file, téléchargé **Tout de suite** (par défaut) ou
+  **À son tour**. Un lien refusé par Tube Archivist fait échouer l'action, avec
+  sa raison.
+
+### Idées de scènes
+
+- Quand une vidéo de votre chaîne préférée est archivée, envoyez-vous un
+  message : « Nouveau dans l'archive : {title} ({channel}, {duration}) ».
+- Chaque soir à 19 h, recherchez les nouveautés des abonnements ; quand la file
+  est vidée, lisez les dernières vidéos Tube Archivist et annoncez la phrase
+  sur l'enceinte du salon.
+- Quand un téléchargement est en erreur, envoyez-vous le message d'erreur, pour
+  mettre à jour les cookies de yt-dlp ou vérifier la vidéo.
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **« Tube Archivist ne répond pas »** : vérifiez l'adresse et le port
+  (`8000`), et que Gladys peut joindre le serveur (même réseau, pare-feu).
+- **« Jeton d'API refusé »** : recopiez le jeton depuis **Settings →
+  Application** dans Tube Archivist (un jeton révoqué change).
+- **« Ce jeton ne peut pas lire la file de téléchargement »** : le jeton est
+  celui d'un utilisateur qui n'est pas administrateur ; utilisez celui d'un
+  administrateur.
+- **« Aucun Tube Archivist v0.5 ou plus récent à cette adresse »** : un autre
+  service répond sur ce port, ou Tube Archivist est antérieur à la v0.5 (les
+  chemins de son API étaient différents) : mettez-le à jour.
+- **« L'adresse redirige »** : un proxy inverse renvoie vers une page de
+  connexion ou vers HTTPS ; saisissez l'adresse directe de Tube Archivist sur
+  votre réseau.
+- **Téléchargées aujourd'hui** reste à 0 alors que des vidéos arrivent : Tube
+  Archivist compte les jours dans son propre fuseau horaire (`TZ` de son
+  conteneur) ; donnez-lui le fuseau de Gladys.
+- Plus de détails : réglez le `LOG_LEVEL` de l'intégration sur `debug` et
+  ouvrez ses logs.
+
+## Limites
+
+- Les chiffres, les événements et la tâche en cours sont aussi frais que
+  l'intervalle de rafraîchissement : une tâche courte entre deux
+  rafraîchissements n'est pas vue.
+- Seuls les 25 téléchargements les plus récents sont comparés à chaque
+  rafraîchissement : au-delà de 10 nouvelles vidéos (une grande playlist
+  ajoutée d'un coup), les vidéos sont comptées, pas toutes annoncées. Une vidéo
+  importée ou réindexée avec une date de téléchargement ancienne n'est pas
+  annoncée.
+- Les 25 téléchargements en erreur les plus récents sont lus ; les autres sont
+  comptés.
+- **Ajouter une vidéo** attend jusqu'à 20 secondes que Tube Archivist accepte le
+  lien ; une playlist ou une chaîne peut prendre plus longtemps : l'action
+  réussit alors, et ses vidéos apparaissent dans la file au rafraîchissement
+  suivant.
+- L'intégration a été écrite pour l'API de Tube Archivist v0.5 (testée sur la
+  v0.5.12) : une future version qui la change peut demander une mise à jour.
+- Non affiliée à Tube Archivist, YouTube ou Google.
