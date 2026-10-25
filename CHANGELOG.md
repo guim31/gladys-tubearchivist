@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-25
+
 ### Added
 
 - Tube Archivist in Gladys: one device for the server (online, archived
@@ -24,3 +26,6 @@ the notes of the version's GitHub Release.
   progress, the latest videos, and the buttons “Add a video” and “Rescan”.
 - Configuration: address, API token, refresh interval, language of the feature
   names. Documentation in English, French, German and Spanish.
+
+[Unreleased]: https://github.com/guim31/gladys-tubearchivist/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-tubearchivist/releases/tag/v1.0.0
