@@ -31,16 +31,21 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
+index.js                          SDK wiring only (src/app.js registers every handler)
+src/app.js                        handlers registered before connect(), shared with the tests
+src/hub.js                        timer of the container, readings, scene events, commands, reports
+src/devices.js                    the server device (features, names in four languages)
+src/tubearchivist/client.js       REST API of Tube Archivist (token, errors, parsing)
+src/tubearchivist/http.js         the one function that talks to the network
 src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+src/widgets.js                    dashboard widget handler (manifest `widgets`)
+src/texts.js                      every message sent to Gladys, in en/fr/de/es
+src/store.js                      what was seen, under /data (nothing announced twice)
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
+test/                             node --test, against the SDK's fake Gladys and a fake Tube Archivist
+test/fixtures/tubearchivist/      answers recorded from a real Tube Archivist v0.5.12, trimmed
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +75,9 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in English, French, German ("du") and Spanish
+  ("usted"): action messages, manifest texts, widget texts, feature names, and
+  `docs/en.md`, `fr.md`, `de.md`, `es.md`, kept in sync (`test/i18n.test.js`).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -233,3 +239,32 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Tube Archivist (vérifié sur une vraie v0.5.12, 25/10/2026)
+
+- **API REST** sous `/api/`, en-tête `Authorization: Token <jeton>` (Settings → Application). Jeton absent ou
+  faux : **403** (pas 401) `{"detail": "Invalid token."}` ou `"Invalid token header. No credentials provided."`.
+  `/api/download/…` et `/api/task/…` sont `AdminOnly` : un jeton non admin y reçoit 403
+  `"You do not have permission…"` alors que `/api/ping/` répond. Le client distingue les deux (`NOT_ADMIN`).
+- Un chemin inconnu répond **404 en HTML** (Django) : c'est ainsi qu'on reconnaît un « pas Tube Archivist ou
+  antérieur à v0.5 ». `/api/health/` répond sans jeton.
+- Statistiques d'une instance vide : **`null` partout** (`pending: null`, `subscribed_true: null`…), pas 0.
+- `GET /api/download/?filter=pending&error=true` : les **téléchargements en erreur restent `pending`** avec un
+  champ `message` (l'erreur de yt-dlp). `stats/download.pending` les compte : « en attente » publié = `pending −
+erreurs`. Pages de 25 (`paginate.total_hits` pour le total).
+- `POST /api/download/` (`{"data":[{"youtube_id": "<lien ou id>", "status": "pending"}]}`, `?autostart=true`
+  pour la tête de file et le démarrage) répond toujours 200 avec un `task_id` : le lien est analysé **dans une
+  tâche Celery**. Un lien invalide n'échoue qu'ensuite (`GET /api/task/by-id/<id>/` → `FAILURE`,
+  `result` = repr Python `{'exc_message': ['not a valid id_str: …']}`). Tube Archivist **coupe sur les
+  espaces** : n'envoyer qu'un lien (`parseYoutubeLink`).
+- `POST /api/task/by-name/update_subscribed/` (recherche des abonnements), `download_pending` (lancer la file).
+- `/api/notification/` : tâches en cours (`title` anglais, `group` `download:run`/`download:scan`/…,
+  `messages`, `progress` 0–1). Une tâche finie y traîne un moment avec `messages: ["Task completed"]` ; une
+  tâche en échec y reste avec `level: "error"`.
+- `stats/downloadhist` : vidéos par jour, date dans le **fuseau de Tube Archivist** (`TZ` de son conteneur).
+- Page d'une vidéo dans l'interface : `/video/<youtube_id>` (vu dans le bundle du front).
+- Banc de test Docker : Elasticsearch refuse d'allouer ses index quand le disque de l'hôte dépasse 90 %
+  (puis 401 sur l'utilisateur `elastic`) : `cluster.routing.allocation.disk.threshold_enabled=false`. Le
+  conteneur Tube Archivist a besoin de **2 Go** (worker tué par l'OOM à 1 Go pendant un téléchargement 4K).
+  Une erreur de téléchargement réelle se provoque avec un format impossible
+  (`POST /api/appsettings/config/ {"downloads": {"format": "bestvideo[height=7]"}}`).
